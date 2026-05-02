@@ -1,0 +1,158 @@
+
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{Advanced Python-Based Gene Sequencing Pipeline\\Detailed Syntax and Workflow Explanation}
+\author{}
+\date{}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    breaklines=true,
+    frame=single
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This document provides a detailed breakdown of a Python function used in sequencing data preprocessing, followed by an extended explanation of a full computational gene sequencing workflow.
+
+\section{Core Function}
+\begin{lstlisting}[language=Python]
+def trim_read(seq, qual, threshold=20):
+    return "".join([base for base, q in zip(seq, qual) if q >= threshold])
+\end{lstlisting}
+
+\section{Step-by-Step Syntax Explanation}
+
+\subsection{Function Definition}
+\begin{itemize}
+\item \texttt{def}: घोषित करता है कि हम एक function define कर रहे हैं।
+\item \texttt{trim\_read}: function का नाम।
+\item \texttt{seq}: DNA sequence (string).
+\item \texttt{qual}: quality scores (list of integers).
+\item \texttt{threshold=20}: default parameter।
+\end{itemize}
+
+\subsection{zip Function}
+\begin{lstlisting}[language=Python]
+zip(seq, qual)
+\end{lstlisting}
+Pairs corresponding elements:
+\begin{verbatim}
+"ATCG" + [30,10,25,18] → [('A',30), ('T',10), ...]
+\end{verbatim}
+
+\subsection{List Comprehension}
+\begin{lstlisting}[language=Python]
+[base for base, q in zip(seq, qual) if q >= threshold]
+\end{lstlisting}
+
+Equivalent to:
+\begin{lstlisting}[language=Python]
+result = []
+for base, q in zip(seq, qual):
+    if q >= threshold:
+        result.append(base)
+\end{lstlisting}
+
+\subsection{Join Operation}
+\begin{lstlisting}[language=Python]
+"".join(list)
+\end{lstlisting}
+Concatenates characters into a string efficiently.
+
+\section{Execution Example}
+\begin{lstlisting}[language=Python]
+seq = "ATCG"
+qual = [30, 10, 25, 18]
+\end{lstlisting}
+
+Output:
+\begin{verbatim}
+"AC"
+\end{verbatim}
+
+\section{Advanced Optimization}
+Use generator expression:
+\begin{lstlisting}[language=Python]
+return "".join(base for base, q in zip(seq, qual) if q >= threshold)
+\end{lstlisting}
+
+\section{Full Sequencing Workflow (Computational)}
+
+\subsection{1. FASTQ Parsing}
+\begin{lstlisting}[language=Python]
+from Bio import SeqIO
+for record in SeqIO.parse("reads.fastq", "fastq"):
+    seq = record.seq
+\end{lstlisting}
+
+\subsection{2. Quality Control}
+Filtering reads based on Phred score:
+\begin{equation}
+Q = -10 \log_{10}(P)
+\end{equation}
+
+\subsection{3. Alignment}
+\begin{lstlisting}[language=Python]
+def naive_align(read, ref):
+    for i in range(len(ref)-len(read)+1):
+        if ref[i:i+len(read)] == read:
+            return i
+\end{lstlisting}
+
+\subsection{4. BAM Processing}
+\begin{lstlisting}[language=Python]
+import pysam
+bam = pysam.AlignmentFile("file.bam", "rb")
+\end{lstlisting}
+
+\subsection{5. Variant Calling}
+\begin{lstlisting}[language=Python]
+for pileupcolumn in bam.pileup():
+    print(pileupcolumn.pos)
+\end{lstlisting}
+
+\subsection{6. Filtering Variants}
+\begin{lstlisting}[language=Python]
+if quality > 30:
+    keep = True
+\end{lstlisting}
+
+\subsection{7. Annotation}
+\begin{lstlisting}[language=Python]
+import vcf
+\end{lstlisting}
+
+\subsection{8. Assembly (De Bruijn Graph)}
+\begin{lstlisting}[language=Python]
+def build_graph(reads, k):
+    pass
+\end{lstlisting}
+
+\subsection{9. Visualization}
+\begin{lstlisting}[language=Python]
+import matplotlib.pyplot as plt
+plt.plot([1,2,3])
+\end{lstlisting}
+
+\subsection{10. Workflow Automation}
+\begin{lstlisting}[language=Python]
+rule align:
+    shell: "bwa mem ref.fa reads.fastq"
+\end{lstlisting}
+
+\section{Conclusion}
+Python acts as a control layer integrating multiple bioinformatics tools, enabling scalable sequencing analysis.
+
+\end{document}
